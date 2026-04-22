@@ -1,0 +1,31 @@
+# Google Drive
+google_drive:
+  folder_id: "1KqyjI4KNipVGPm3M-erq9YbXLy99Iysi"
+
+# Ollama
+ollama:
+  base_url: "http://localhost:11434"
+  default_model: "llama3.1:8b"
+  embedding_model: "nomic-embed-text"
+  available_models:
+    - "llama3.1:8b"
+    - "mistral:7b"
+
+# Text splitting
+chunking:
+  chunk_size: 1000
+  chunk_overlap: 200
+
+# Storage
+storage:
+  chroma_path: "./chroma_db"
+
+# Retrieval
+retrieval:
+  top_k: 3
+
+# Memory
+memory:
+  max_history_turns: 5
+
+  
