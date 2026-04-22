@@ -1,0 +1,14 @@
+langchain
+langchain-core
+langchain-community
+langchain-ollama
+chromadb
+pypdf
+python-docx
+python-pptx
+openpyxl
+gradio
+google-api-python-client
+google-auth-httplib2
+python-dotenv
+pyyaml
