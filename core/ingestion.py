@@ -5,6 +5,7 @@ from pptx import Presentation
 from pypdf import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+
 class DocumentParser:
     def __init__(self):
         pass
@@ -56,6 +57,7 @@ class DocumentParser:
     def _parse_image(self, file_bytes):
         return ""
 
+
 class TextChunker:
     def __init__(self, config):
         self.chunk_size = config.chunk_size
@@ -70,3 +72,40 @@ class TextChunker:
             [text],
             metadatas=[metadata] if metadata else None
         )
+
+
+class IngestionPipeline:
+    def __init__(self, config, drive_client, registry, parser, chunker, vector_store):
+        self.config = config
+        self.drive_client = drive_client
+        self.registry = registry
+        self.parser = parser
+        self.chunker = chunker
+        self.vector_store = vector_store
+
+    def run_delta_check(self):
+        drive_files = self.drive_client.list_files_in_folder(self.config.drive_folder_id)
+        new_or_updated_files = self.registry.get_new_or_updated_files(drive_files)
+        return new_or_updated_files
+
+    def ingest_file(self, file):
+        file_id = file['id']
+        modified_time = file['modifiedTime']
+        metadata = {
+            'file_id': file_id,
+            'file_name': file['name'],
+            'mime_type': file['mimeType'],
+            'modified_time': modified_time
+        }
+        file_bytes = self.drive_client.download_file(file_id).read()
+        text = self.parser.parse(file_bytes, file['mimeType'])
+        chunks = self.chunker.chunk_text(text, metadata)
+        self.vector_store.upsert(chunks)
+        self.registry.update(file_id, modified_time)
+
+    def run(self):
+        new_or_updated_files = self.run_delta_check()
+        for file in new_or_updated_files:
+            print(f"Ingesting: {file['name']}")
+            self.ingest_file(file)
+        print(f"Ingestion complete. {len(new_or_updated_files)} files processed.")
