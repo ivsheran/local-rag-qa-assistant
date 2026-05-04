@@ -12,7 +12,7 @@ Question:
 Instructions:
 - Answer only based on the context provided above
 - Return results in bullet points
-- At the end of your answer cite the source document(s) you used as per format: Source: filename.docx
+- You MUST cite sources using ONLY this exact format: [Source: filename] inline after the relevant sentence.
 - If asked about code or commands, format them in code blocks
 - If the answer is not in the context, say "I don't have enough information to answer this question"
 - If context is insufficient, say so clearly rather than guessing
