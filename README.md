@@ -130,7 +130,8 @@ Edit `config.yaml` to change:
 - `chunking.chunk_size` — adjust chunk size for different document types
 
 ## Project structure
-ocal-rag-qa-assistant/
+```
+local-rag-qa-assistant/
 ├── core/
 │   ├── config_loader.py      # loads config.yaml and .env
 │   ├── drive_client.py       # Google Drive API client
@@ -147,6 +148,7 @@ ocal-rag-qa-assistant/
 ├── layout.py                 # Gradio UI
 ├── config.yaml               # configuration
 └── docker-compose.yml        # Docker setup
+```
 
 ## Known limitations & future improvements
 
