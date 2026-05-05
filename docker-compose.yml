@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: ask-ash
+    ports:
+      - "7860:7860"
+    env_file:
+      - .env
+    volumes:
+      - ./credentials.json:/app/credentials.json
+      - ./chroma_db:/app/chroma_db
+      - ./assets:/app/assets
+    restart: unless-stopped

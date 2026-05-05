@@ -183,7 +183,7 @@ class GradioLayout:
 
     def launch(self):
         demo = self.build_gradio_layout()
-        demo.launch(
+        demo.launch(server_name="0.0.0.0", 
             allowed_paths=["assets"],
             theme=self.theme,
             css=CUSTOM_CSS
