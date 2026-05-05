@@ -9,7 +9,66 @@ While studying LLMs, RAG and vector databases through IBM courses, I accumulated
 
 The app follows a standard RAG (Retrieval-Augmented Generation) pattern with a delta ingestion pipeline:
 
-See [architecture diagram](architecture.mermaid) for the full system design.
+```mermaid
+graph TB
+    subgraph CONFIG["Configuration Layer"]
+        ENV[".env\nGDrive credentials path"]
+        YAML["config.yaml\nfolder_id, models,\nchunk_size, chroma_path"]
+    end
+
+    subgraph INGESTION["Ingestion Pipeline"]
+        GD["Google Drive API\nfolder_id → file list"]
+        DELTA["Delta Checker\ncompare Drive list\nvs indexed registry"]
+        PARSER["Document Parser\ndocx · xlsx · pdf · pptx\njpeg/png → metadata only"]
+        CHUNKER["Text Chunker\nRecursiveCharacterTextSplitter"]
+        EMBEDDER["Embedder\nOllama nomic-embed-text"]
+        REGISTRY["File Registry\nregistry.json"]
+    end
+
+    subgraph STORAGE["Storage Layer"]
+        CHROMA["ChromaDB\npersisted ./chroma_db"]
+    end
+
+    subgraph RETRIEVAL["Retrieval Chain - LCEL"]
+        RETRIEVER["Retriever\ntop-k chunks"]
+        PROMPT["Prompt Template\ncontext + history + question"]
+        MEMORY["Conversation Memory\nInMemoryChatMessageHistory"]
+        LLM["ChatOllama\nlocalhost:11434\nmodel: switchable"]
+        CITATION["Citation Extractor\nsource filename per chunk"]
+    end
+
+    subgraph OLLAMA["Ollama - localhost:11434"]
+        LLAMA["llama3.1:8b"]
+        MISTRAL["mistral:7b"]
+        NOMIC["nomic-embed-text"]
+    end
+
+    subgraph UI["Gradio UI"]
+        TAB1["Tab 1 - Chat with Ash\nLLM switcher · chat history\nsource citations"]
+        TAB2["Tab 2 - Compare Models\nside-by-side · response time"]
+    end
+
+    ENV --> GD
+    YAML --> GD
+    YAML --> LLM
+    YAML --> CHUNKER
+    GD --> DELTA
+    DELTA --> REGISTRY
+    DELTA --> PARSER
+    PARSER --> CHUNKER
+    CHUNKER --> EMBEDDER
+    EMBEDDER --> CHROMA
+    EMBEDDER --> NOMIC
+    CHROMA --> RETRIEVER
+    RETRIEVER --> PROMPT
+    MEMORY --> PROMPT
+    PROMPT --> LLM
+    LLM --> LLAMA
+    LLM --> MISTRAL
+    LLM --> CITATION
+    CITATION --> TAB1
+    TAB2 --> LLM
+```
 
 - **Ingestion:** On startup, the app checks Google Drive for new or changed files (delta check), parses them (docx, xlsx, pdf, pptx), chunks the text, embeds it via Ollama, and stores vectors in ChromaDB.
 - **Retrieval:** User questions are embedded and matched against stored vectors via similarity search. Top-k chunks are passed as context to the LLM.
